@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>すくすく記録</title>
+<style>
+  :root{
+    --bg:#FBF8F2; --surface:#FFFFFF; --ink:#2B352B; --muted:#8A938A;
+    --line:#EAE4D6; --line-soft:#F1ECE0;
+    --sprout:#6BA368; --sprout-deep:#4F7E4D; --sprout-bg:#EEF4EC;
+    --apricot:#E59A52; --apricot-deep:#C57B33; --apricot-bg:#FBF0E2;
+    --danger:#C9594B;
+    --shadow:0 1px 2px rgba(43,53,43,.04), 0 6px 18px rgba(43,53,43,.06);
+    --radius:18px;
+    --font:"Hiragino Maru Gothic ProN","ヒラギノ丸ゴ ProN W4","Yu Gothic","YuGothic",
+           "Segoe UI",system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink); font-family:var(--font);
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+    padding:0 0 calc(40px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:540px; margin:0 auto; padding:0 16px}
+
+  /* Header */
+  header{
+    padding:calc(18px + env(safe-area-inset-top)) 0 14px;
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(var(--bg) 78%, rgba(251,248,242,0));
+  }
+  .brand{display:flex; align-items:center; gap:9px; margin-bottom:14px}
+  .brand .leaf{font-size:22px; line-height:1}
+  .brand h1{font-size:18px; margin:0; letter-spacing:.04em; font-weight:600}
+  .brand .sub{font-size:11px; color:var(--muted); margin-left:auto; letter-spacing:.02em}
+
+  /* Child bar */
+  .childbar{
+    display:flex; align-items:center; gap:10px;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:var(--radius); padding:12px 14px; box-shadow:var(--shadow);
+  }
+  .child-avatar{
+    width:42px; height:42px; border-radius:50%; flex:none;
+    background:var(--sprout-bg); color:var(--sprout-deep);
+    display:grid; place-items:center; font-size:19px; font-weight:600;
+  }
+  .child-meta{min-width:0; flex:1}
+  .child-name{font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .child-age{font-size:12px; color:var(--muted)}
+  .child-switch{
+    appearance:none; border:1px solid var(--line); background:var(--bg);
+    border-radius:11px; padding:7px 11px; font-family:inherit; font-size:12px;
+    color:var(--ink); cursor:pointer; flex:none;
+  }
+  .child-switch:active{background:var(--line-soft)}
+
+  /* Tabs */
+  .tabs{display:flex; gap:8px; margin:16px 0 4px}
+  .tab{
+    flex:1; text-align:center; padding:11px 8px; border-radius:13px;
+    font-size:14px; font-weight:600; cursor:pointer; border:1.5px solid transparent;
+    background:var(--surface); color:var(--muted); box-shadow:var(--shadow);
+    transition:.15s; user-select:none;
+  }
+  .tab .ic{display:block; font-size:17px; margin-bottom:1px}
+  .tab.active[data-tab="body"]{background:var(--sprout-bg); color:var(--sprout-deep); border-color:var(--sprout)}
+  .tab.active[data-tab="act"]{background:var(--apricot-bg); color:var(--apricot-deep); border-color:var(--apricot)}
+
+  /* Cards */
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px; box-shadow:var(--shadow); margin-top:14px;
+  }
+  .card-title{font-size:13px; font-weight:600; color:var(--muted); margin:0 0 12px; letter-spacing:.03em}
+
+  /* Form */
+  .field{margin-bottom:12px}
+  .field label{display:block; font-size:12px; color:var(--muted); margin-bottom:5px}
+  input,select,textarea{
+    width:100%; font-family:inherit; font-size:16px; color:var(--ink);
+    background:var(--bg); border:1px solid var(--line); border-radius:11px;
+    padding:11px 12px; outline:none; transition:.15s;
+  }
+  input:focus,select,textarea:focus,select:focus{border-color:var(--sprout)}
+  textarea{resize:vertical; min-height:62px; line-height:1.5}
+  .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:9px}
+  .unit-wrap{position:relative}
+  .unit-wrap .unit{
+    position:absolute; right:11px; top:50%; transform:translateY(-50%);
+    font-size:12px; color:var(--muted); pointer-events:none;
+  }
+  .unit-wrap input{padding-right:34px; text-align:center}
+
+  /* Chips */
+  .chips{display:flex; flex-wrap:wrap; gap:7px}
+  .chip{
+    padding:8px 13px; border-radius:999px; font-size:13px; cursor:pointer;
+    border:1.5px solid var(--line); background:var(--bg); color:var(--ink);
+    user-select:none; transition:.12s;
+  }
+  .chip.on{background:var(--apricot-bg); border-color:var(--apricot); color:var(--apricot-deep); font-weight:600}
+
+  /* Buttons */
+  .btn{
+    width:100%; border:none; border-radius:12px; padding:13px; font-family:inherit;
+    font-size:15px; font-weight:600; cursor:pointer; color:#fff; transition:.15s;
+  }
+  .btn-green{background:var(--sprout)} .btn-green:active{background:var(--sprout-deep)}
+  .btn-apricot{background:var(--apricot)} .btn-apricot:active{background:var(--apricot-deep)}
+  .btn-ghost{background:transparent; color:var(--muted); border:1px solid var(--line)}
+
+  /* List */
+  .log-list{margin-top:14px; display:flex; flex-direction:column; gap:9px}
+  .log{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:13px 14px; display:flex; gap:12px; align-items:flex-start;
+  }
+  .log .date{font-size:11px; color:var(--muted); white-space:nowrap; padding-top:2px; min-width:62px}
+  .log .body{flex:1; min-width:0}
+  .measure-vals{display:flex; flex-wrap:wrap; gap:14px; font-size:15px}
+  .measure-vals b{font-weight:600}
+  .measure-vals .mlabel{font-size:11px; color:var(--muted); display:block; line-height:1.2}
+  .log .note{font-size:13px; color:var(--ink); margin-top:3px; word-break:break-word}
+  .log .cat{
+    display:inline-block; font-size:11px; font-weight:600; padding:2px 9px;
+    border-radius:999px; background:var(--apricot-bg); color:var(--apricot-deep);
+  }
+  .log .acts{display:flex; flex-direction:column; gap:4px; align-self:center; flex:none}
+  .log .iconbtn{
+    appearance:none; border:none; background:none; color:var(--muted);
+    font-size:15px; cursor:pointer; padding:5px 7px; line-height:1; border-radius:9px;
+  }
+  .log .iconbtn:active{background:var(--line-soft)}
+  .log .iconbtn.del:active{color:var(--danger)}
+
+  .empty{text-align:center; color:var(--muted); font-size:13px; padding:26px 12px}
+  .empty .big{font-size:26px; display:block; margin-bottom:6px}
+
+  /* Chart */
+  .chart-head{display:flex; gap:7px; margin-bottom:10px}
+  .seg{
+    flex:1; text-align:center; font-size:12px; padding:7px 4px; border-radius:10px;
+    border:1.5px solid var(--line); background:var(--bg); cursor:pointer; color:var(--muted);
+  }
+  .seg.on{background:var(--sprout-bg); border-color:var(--sprout); color:var(--sprout-deep); font-weight:600}
+  svg.chart{width:100%; height:170px; display:block; overflow:visible}
+
+  /* Footer / data */
+  .data-actions{display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:10px}
+  .data-actions .btn{font-size:13px; padding:11px}
+  .privacy{
+    font-size:11px; color:var(--muted); text-align:center; line-height:1.7;
+    margin:22px 0 0; padding:0 8px;
+  }
+  .privacy b{color:var(--sprout-deep)}
+
+  /* Modal */
+  .modal-bg{
+    position:fixed; inset:0; background:rgba(43,53,43,.34); z-index:50;
+    display:none; align-items:flex-end; justify-content:center;
+    padding:0; backdrop-filter:blur(2px);
+  }
+  .modal-bg.open{display:flex}
+  .modal{
+    background:var(--surface); width:100%; max-width:540px;
+    border-radius:22px 22px 0 0; padding:22px 18px calc(26px + env(safe-area-inset-bottom));
+    box-shadow:0 -8px 30px rgba(43,53,43,.18); animation:slideup .22s ease;
+  }
+  @keyframes slideup{from{transform:translateY(40px); opacity:.6} to{transform:translateY(0); opacity:1}}
+  .modal h2{font-size:16px; margin:0 0 16px}
+  .child-pick{
+    display:flex; align-items:center; gap:11px; padding:11px; border-radius:12px;
+    border:1px solid var(--line); margin-bottom:8px; cursor:pointer;
+  }
+  .child-pick.cur{border-color:var(--sprout); background:var(--sprout-bg)}
+  .child-pick .x{margin-left:auto; color:var(--muted); font-size:16px; padding:4px}
+  .hint{font-size:11px; color:var(--muted); margin-top:2px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <span class="leaf">🌱</span>
+      <h1>すくすく記録</h1>
+      <span class="sub">この端末だけに保存</span>
+    </div>
+    <div class="childbar" id="childbar">
+      <div class="child-avatar" id="avatar">–</div>
+      <div class="child-meta">
+        <div class="child-name" id="childName">お子さんを登録してください</div>
+        <div class="child-age" id="childAge">右の「切替」から追加できます</div>
+      </div>
+      <button class="child-switch" id="switchBtn">切替</button>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="body" id="tabBody"><span class="ic">📏</span>身体測定</div>
+      <div class="tab" data-tab="act" id="tabAct"><span class="ic">📝</span>行動記録</div>
+    </div>
+  </header>
+
+  <!-- ===== 身体測定 ===== -->
+  <section id="panelBody">
+    <div class="card">
+      <p class="card-title">記録を追加</p>
+      <div class="field">
+        <label for="bDate">日付</label>
+        <input type="date" id="bDate">
+      </div>
+      <div class="row3">
+        <div class="field">
+          <label for="bH">身長</label>
+          <div class="unit-wrap"><input type="number" id="bH" inputmode="decimal" step="0.1" placeholder="–"><span class="unit">cm</span></div>
+        </div>
+        <div class="field">
+          <label for="bW">体重</label>
+          <div class="unit-wrap"><input type="number" id="bW" inputmode="numeric" step="10" placeholder="–"><span class="unit">g</span></div>
+        </div>
+        <div class="field">
+          <label for="bHc">頭囲</label>
+          <div class="unit-wrap"><input type="number" id="bHc" inputmode="decimal" step="0.1" placeholder="–"><span class="unit">cm</span></div>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label for="bNote">メモ（任意）</label>
+        <input type="text" id="bNote" placeholder="例：健診で測定">
+      </div>
+      <button class="btn btn-green" id="addBody">記録する</button>
+      <button class="btn btn-ghost" id="cancelBody" style="display:none; margin-top:8px">編集をやめる</button>
+    </div>
+
+    <div class="card" id="chartCard" style="display:none">
+      <p class="card-title">成長グラフ</p>
+      <div class="chart-head">
+        <div class="seg on" data-metric="h">身長</div>
+        <div class="seg" data-metric="w">体重</div>
+        <div class="seg" data-metric="hc">頭囲</div>
+      </div>
+      <svg class="chart" id="chart" viewBox="0 0 320 170" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="log-list" id="bodyList"></div>
+  </section>
+
+  <!-- ===== 行動記録 ===== -->
+  <section id="panelAct" style="display:none">
+    <div class="card">
+      <p class="card-title">記録を追加</p>
+      <div class="field">
+        <label for="aDate">日付</label>
+        <input type="date" id="aDate">
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label for="aNote">できごと</label>
+        <textarea id="aNote" placeholder="例：はじめて寝返りができた！"></textarea>
+      </div>
+      <button class="btn btn-apricot" id="addAct">記録する</button>
+      <button class="btn btn-ghost" id="cancelAct" style="display:none; margin-top:8px">編集をやめる</button>
+    </div>
+    <div class="log-list" id="actList"></div>
+  </section>
+
+  <!-- ===== データ ===== -->
+  <div class="card">
+    <p class="card-title">データのバックアップ</p>
+    <p class="hint" style="margin:0 0 10px">記録はこの端末のブラウザ内だけに保存されます。機種変更や万一に備えて、ときどき書き出して保管してください。</p>
+    <div class="data-actions">
+      <button class="btn btn-ghost" id="exportJson">JSON書き出し</button>
+      <button class="btn btn-ghost" id="importJson">JSON読み込み</button>
+      <button class="btn btn-ghost" id="exportCsv">測定をCSV</button>
+      <button class="btn btn-ghost" id="wipe">全消去</button>
+    </div>
+    <input type="file" id="fileInput" accept="application/json" style="display:none">
+  </div>
+
+  <p class="privacy">
+    🔒 すべての記録は<b>あなたの端末の中だけ</b>に保存され、外部には送信されません。<br>
+    GitHub Pages 上で開いても、データが第三者に見えることはありません。
+  </p>
+</div>
+
+<!-- 子ども切替/追加モーダル -->
+<div class="modal-bg" id="childModal">
+  <div class="modal">
+    <h2>お子さんの管理</h2>
+    <div id="childPickList"></div>
+    <div class="card" style="margin-top:14px; box-shadow:none; background:var(--bg)">
+      <div class="field">
+        <label for="newName">なまえ</label>
+        <input type="text" id="newName" placeholder="例：はな">
+      </div>
+      <div class="field" style="margin-bottom:12px">
+        <label for="newBday">生年月日</label>
+        <input type="date" id="newBday">
+      </div>
+      <button class="btn btn-green" id="addChild">追加する</button>
+    </div>
+    <button class="btn btn-ghost" id="closeModal" style="margin-top:10px">閉じる</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const KEY = "sukusuku.v1";
+
+/* ---------- state ---------- */
+let state = load();
+function load(){
+  try{
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if(s && s.children) return s;
+  }catch(e){}
+  return { children:[], current:null, measures:{}, acts:{} };
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch(e){ alert("保存に失敗しました。ブラウザの設定（プライベートモード等）をご確認ください。"); }
+}
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const pad = n => String(n).padStart(2,"0");
+function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function fmtDate(s){ const [y,m,d]=s.split("-"); return `${Number(m)}/${Number(d)}`; }
+
+function ageString(bday){
+  if(!bday) return "";
+  const b=new Date(bday+"T00:00:00"), n=new Date();
+  if(isNaN(b)) return "";
+  let days=Math.floor((n - b)/86400000);
+  if(days<0) return "これから生まれます";
+  if(days<31) return `生後${days}日`;
+  let y=n.getFullYear()-b.getFullYear();
+  let mo=n.getMonth()-b.getMonth();
+  let dd=n.getDate()-b.getDate();
+  if(dd<0) mo--;
+  if(mo<0){ y--; mo+=12; }
+  if(y<1) return `生後${mo}か月`;
+  return `${y}歳${mo}か月`;
+}
+
+function curChild(){ return state.children.find(c=>c.id===state.current) || null; }
+function curMeasures(){ return (state.measures[state.current]||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)); }
+function curActs(){
+  return (state.acts[state.current]||[]).slice().sort((a,b)=> b.date.localeCompare(a.date));
+}
+
+/* ---------- render: child bar ---------- */
+function renderChild(){
+  const c = curChild();
+  if(!c){
+    $("avatar").textContent="–";
+    $("childName").textContent="お子さんを登録してください";
+    $("childAge").textContent="右の「切替」から追加できます";
+    return;
+  }
+  $("avatar").textContent = (c.name||"?").slice(0,1);
+  $("childName").textContent = c.name;
+  $("childAge").textContent = ageString(c.bday) || "生年月日 未設定";
+}
+
+/* ---------- render: measurements ---------- */
+function renderBody(){
+  const list = $("bodyList");
+  const ms = curMeasures();
+  if(!state.current){ list.innerHTML = emptyBox("👶","お子さんを登録すると記録できます"); $("chartCard").style.display="none"; return; }
+  if(ms.length===0){ list.innerHTML = emptyBox("📏","まだ記録がありません"); }
+  else{
+    list.innerHTML = ms.map(m=>`
+      <div class="log">
+        <div class="date">${fmtDate(m.date)}</div>
+        <div class="body">
+          <div class="measure-vals">
+            ${m.h?`<span><span class="mlabel">身長</span><b>${m.h}</b> cm</span>`:""}
+            ${m.w?`<span><span class="mlabel">体重</span><b>${m.w}</b> g</span>`:""}
+            ${m.hc?`<span><span class="mlabel">頭囲</span><b>${m.hc}</b> cm</span>`:""}
+          </div>
+          ${m.note?`<div class="note">${esc(m.note)}</div>`:""}
+        </div>
+        <div class="acts">
+          <button class="iconbtn" data-edit-body="${m.id}" aria-label="編集">✎</button>
+          <button class="iconbtn del" data-del-body="${m.id}" aria-label="削除">×</button>
+        </div>
+      </div>`).join("");
+  }
+  renderChart();
+}
+
+/* ---------- render: chart ---------- */
+let chartMetric = "h";
+function renderChart(){
+  const card=$("chartCard"), svg=$("chart");
+  const ms = curMeasures().slice().reverse(); // ascending by date
+  const field = chartMetric;
+  const pts = ms.filter(m=>m[field]!=null && m[field]!=="").map(m=>({x:m.date, y:Number(m[field])}));
+  if(pts.length<2){ card.style.display = curMeasures().length? "block":"none";
+    if(card.style.display==="block") svg.innerHTML = `<text x="160" y="88" text-anchor="middle" fill="#8A938A" font-size="12" font-family="inherit">2件以上で折れ線が表示されます</text>`;
+    return;
+  }
+  card.style.display="block";
+  const W=320,H=170, padL=42,padR=12,padT=14,padB=24;
+  const xs=pts.map(p=>new Date(p.x).getTime());
+  const ys=pts.map(p=>p.y);
+  const xmin=Math.min(...xs), xmax=Math.max(...xs);
+  let ymin=Math.min(...ys), ymax=Math.max(...ys);
+  if(ymin===ymax){ ymin-=1; ymax+=1; } else { const pad=(ymax-ymin)*0.12; ymin-=pad; ymax+=pad; }
+  const X=t=>padL+((t-xmin)/((xmax-xmin)||1))*(W-padL-padR);
+  const Y=v=>H-padB-((v-ymin)/((ymax-ymin)||1))*(H-padT-padB);
+  const coords=pts.map(p=>({x:X(new Date(p.x).getTime()), y:Y(p.y), v:p.y, d:p.x}));
+  const line=coords.map((c,i)=>(i?"L":"M")+c.x.toFixed(1)+" "+c.y.toFixed(1)).join(" ");
+  const area=`M${coords[0].x} ${H-padB} `+coords.map(c=>`L${c.x.toFixed(1)} ${c.y.toFixed(1)}`).join(" ")+` L${coords[coords.length-1].x} ${H-padB} Z`;
+  const fmtV = v => chartMetric==="w" ? Math.round(v).toLocaleString() : v.toFixed(1);
+  const grid=[ymin,(ymin+ymax)/2,ymax].map(v=>{
+    const y=Y(v);
+    return `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#F1ECE0"/>
+            <text x="${padL-5}" y="${y+3}" text-anchor="end" fill="#B6BCB4" font-size="9" font-family="inherit">${fmtV(v)}</text>`;
+  }).join("");
+  const dots=coords.map(c=>`<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3.2" fill="#fff" stroke="#6BA368" stroke-width="2"/>`).join("");
+  const xl=`<text x="${coords[0].x}" y="${H-7}" text-anchor="middle" fill="#B6BCB4" font-size="9" font-family="inherit">${fmtDate(coords[0].d)}</text>
+            <text x="${coords[coords.length-1].x}" y="${H-7}" text-anchor="middle" fill="#B6BCB4" font-size="9" font-family="inherit">${fmtDate(coords[coords.length-1].d)}</text>`;
+  svg.innerHTML = `
+    ${grid}
+    <path d="${area}" fill="#6BA368" opacity="0.08"/>
+    <path d="${line}" fill="none" stroke="#6BA368" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    ${dots}${xl}`;
+}
+
+/* ---------- render: acts ---------- */
+function renderActs(){
+  const list=$("actList"); const as=curActs();
+  if(!state.current){ list.innerHTML=emptyBox("👶","お子さんを登録すると記録できます"); return; }
+  if(as.length===0){ list.innerHTML=emptyBox("📝","まだ記録がありません"); return; }
+  list.innerHTML = as.map(a=>`
+    <div class="log">
+      <div class="date">${fmtDate(a.date)}</div>
+      <div class="body">
+        <div class="note">${esc(a.note)}</div>
+      </div>
+      <div class="acts">
+        <button class="iconbtn" data-edit-act="${a.id}" aria-label="編集">✎</button>
+        <button class="iconbtn del" data-del-act="${a.id}" aria-label="削除">×</button>
+      </div>
+    </div>`).join("");
+}
+
+function emptyBox(icon,msg){ return `<div class="empty"><span class="big">${icon}</span>${msg}</div>`; }
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderAll(){ renderChild(); renderBody(); renderActs(); }
+
+/* ---------- add / edit measurement ---------- */
+let editBodyId=null;
+$("addBody").onclick = ()=>{
+  if(!ensureChild()) return;
+  const h=$("bH").value.trim(), w=$("bW").value.trim(), hc=$("bHc").value.trim();
+  if(!h && !w && !hc){ alert("身長・体重・頭囲のいずれかを入力してください。"); return; }
+  const date=$("bDate").value||todayStr(), note=$("bNote").value.trim();
+  if(editBodyId){
+    const m=(state.measures[state.current]||[]).find(x=>x.id===editBodyId);
+    if(m){ m.date=date; m.h=h||null; m.w=w||null; m.hc=hc||null; m.note=note; }
+    cancelBodyEdit();
+  }else{
+    (state.measures[state.current] ||= []).push({ id:uid(), date, h:h||null, w:w||null, hc:hc||null, note });
+    $("bH").value=$("bW").value=$("bHc").value=$("bNote").value="";
+  }
+  save(); renderBody();
+};
+function startBodyEdit(id){
+  const m=(state.measures[state.current]||[]).find(x=>x.id===id); if(!m) return;
+  editBodyId=id;
+  $("bDate").value=m.date; $("bH").value=m.h||""; $("bW").value=m.w||"";
+  $("bHc").value=m.hc||""; $("bNote").value=m.note||"";
+  $("addBody").textContent="更新する"; $("cancelBody").style.display="block";
+  setTab("body"); $("bDate").scrollIntoView({behavior:"smooth", block:"center"});
+}
+function cancelBodyEdit(){
+  editBodyId=null;
+  $("bDate").value=todayStr(); $("bH").value=$("bW").value=$("bHc").value=$("bNote").value="";
+  $("addBody").textContent="記録する"; $("cancelBody").style.display="none";
+}
+$("cancelBody").onclick=cancelBodyEdit;
+
+/* ---------- add / edit act ---------- */
+let editActId=null;
+$("addAct").onclick = ()=>{
+  if(!ensureChild()) return;
+  const note=$("aNote").value.trim();
+  if(!note){ alert("できごとを入力してください。"); return; }
+  const date=$("aDate").value||todayStr();
+  if(editActId){
+    const a=(state.acts[state.current]||[]).find(x=>x.id===editActId);
+    if(a){ a.date=date; a.note=note; }
+    cancelActEdit();
+  }else{
+    (state.acts[state.current] ||= []).push({ id:uid(), date, note });
+    $("aNote").value="";
+  }
+  save(); renderActs();
+};
+function startActEdit(id){
+  const a=(state.acts[state.current]||[]).find(x=>x.id===id); if(!a) return;
+  editActId=id;
+  $("aDate").value=a.date; $("aNote").value=a.note||"";
+  $("addAct").textContent="更新する"; $("cancelAct").style.display="block";
+  setTab("act"); $("aDate").scrollIntoView({behavior:"smooth", block:"center"});
+}
+function cancelActEdit(){
+  editActId=null;
+  $("aDate").value=todayStr(); $("aNote").value="";
+  $("addAct").textContent="記録する"; $("cancelAct").style.display="none";
+}
+$("cancelAct").onclick=cancelActEdit;
+
+/* ---------- delete ---------- */
+document.body.addEventListener("click", e=>{
+  const eb=e.target.closest("[data-edit-body]");
+  if(eb){ startBodyEdit(eb.dataset.editBody); return; }
+  const ea=e.target.closest("[data-edit-act]");
+  if(ea){ startActEdit(ea.dataset.editAct); return; }
+  const db=e.target.closest("[data-del-body]");
+  if(db){ if(confirm("この記録を削除しますか？")){
+    state.measures[state.current]=state.measures[state.current].filter(m=>m.id!==db.dataset.delBody);
+    save(); renderBody(); } return; }
+  const da=e.target.closest("[data-del-act]");
+  if(da){ if(confirm("この記録を削除しますか？")){
+    state.acts[state.current]=state.acts[state.current].filter(a=>a.id!==da.dataset.delAct);
+    save(); renderActs(); } return; }
+});
+
+/* ---------- tabs ---------- */
+function setTab(t){
+  $("tabBody").classList.toggle("active", t==="body");
+  $("tabAct").classList.toggle("active", t==="act");
+  $("panelBody").style.display = t==="body"?"block":"none";
+  $("panelAct").style.display  = t==="act"?"block":"none";
+}
+$("tabBody").onclick=()=>setTab("body");
+$("tabAct").onclick=()=>setTab("act");
+
+/* ---------- chart metric switch ---------- */
+$("chart").parentElement.querySelector(".chart-head").onclick = e=>{
+  const s=e.target.closest("[data-metric]"); if(!s) return;
+  chartMetric=s.dataset.metric;
+  document.querySelectorAll(".seg").forEach(x=>x.classList.toggle("on",x===s));
+  renderChart();
+};
+
+/* ---------- child modal ---------- */
+function openModal(){ renderPickList(); $("childModal").classList.add("open"); }
+function closeModal(){ $("childModal").classList.remove("open"); }
+$("switchBtn").onclick=openModal;
+$("closeModal").onclick=closeModal;
+$("childModal").onclick=e=>{ if(e.target===$("childModal")) closeModal(); };
+
+function renderPickList(){
+  const el=$("childPickList");
+  if(state.children.length===0){ el.innerHTML=`<p class="hint" style="text-align:center; padding:8px 0">下から最初のお子さんを追加してください</p>`; return; }
+  el.innerHTML = state.children.map(c=>`
+    <div class="child-pick${c.id===state.current?" cur":""}" data-pick="${c.id}">
+      <div class="child-avatar" style="width:34px;height:34px;font-size:15px">${esc((c.name||"?").slice(0,1))}</div>
+      <div><div class="child-name" style="font-size:14px">${esc(c.name)}</div>
+        <div class="child-age">${ageString(c.bday)||"生年月日 未設定"}</div></div>
+      <span class="x" data-remove="${c.id}">🗑</span>
+    </div>`).join("");
+}
+$("childPickList").onclick=e=>{
+  const rm=e.target.closest("[data-remove]");
+  if(rm){ e.stopPropagation();
+    const c=state.children.find(x=>x.id===rm.dataset.remove);
+    if(confirm(`「${c.name}」と、その全記録を削除しますか？`)){
+      state.children=state.children.filter(x=>x.id!==rm.dataset.remove);
+      delete state.measures[rm.dataset.remove]; delete state.acts[rm.dataset.remove];
+      if(state.current===rm.dataset.remove) state.current=state.children[0]?.id||null;
+      save(); renderPickList(); renderAll();
+    }
+    return;
+  }
+  const p=e.target.closest("[data-pick]");
+  if(p){ state.current=p.dataset.pick; save(); renderAll(); closeModal(); }
+};
+$("addChild").onclick=()=>{
+  const name=$("newName").value.trim();
+  if(!name){ alert("なまえを入力してください。"); return; }
+  const c={ id:uid(), name, bday:$("newBday").value };
+  state.children.push(c); state.current=c.id;
+  state.measures[c.id]=[]; state.acts[c.id]=[];
+  save();
+  $("newName").value=""; $("newBday").value="";
+  renderPickList(); renderAll(); closeModal();
+};
+
+function ensureChild(){
+  if(state.current) return true;
+  alert("先にお子さんを登録してください。「切替」ボタンから追加できます。");
+  openModal(); return false;
+}
+
+/* ---------- data export/import ---------- */
+$("exportJson").onclick=()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  download(blob, `sukusuku-backup-${todayStr()}.json`);
+};
+$("importJson").onclick=()=>$("fileInput").click();
+$("fileInput").onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!d.children) throw 0;
+      if(confirm("読み込むと現在のデータは置き換わります。よろしいですか？\n（先に書き出しでバックアップをおすすめします）")){
+        state=d; save(); renderAll(); alert("読み込みました。");
+      }
+    }catch(err){ alert("ファイルを読み込めませんでした。"); }
+    $("fileInput").value="";
+  };
+  r.readAsText(f);
+};
+$("exportCsv").onclick=()=>{
+  if(!state.current){ alert("お子さんを選択してください。"); return; }
+  const rows=[["日付","身長(cm)","体重(g)","頭囲(cm)","メモ"]];
+  curMeasures().slice().reverse().forEach(m=>rows.push([m.date,m.h||"",m.w||"",m.hc||"",(m.note||"").replace(/"/g,'""')]));
+  const csv="\uFEFF"+rows.map(r=>r.map(v=>`"${v}"`).join(",")).join("\r\n");
+  download(new Blob([csv],{type:"text/csv"}), `measure-${curChild().name}-${todayStr()}.csv`);
+};
+$("wipe").onclick=()=>{
+  if(confirm("すべての記録を完全に消去します。元に戻せません。よろしいですか？")){
+    if(confirm("本当に消去しますか？")){
+      localStorage.removeItem(KEY); state=load(); renderAll(); setTab("body");
+    }
+  }
+};
+function download(blob,name){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+/* ---------- init ---------- */
+$("bDate").value=todayStr();
+$("aDate").value=todayStr();
+renderAll();
+</script>
+</body>
+</html>
